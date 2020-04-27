@@ -1,7 +1,7 @@
 local helpers = {
-    version = "1.0";
-    link = "";
-    versionLink = "";
+    version = "1";
+    link = "https://raw.githubusercontent.com/superyor/helpers/master/helpers.lua";
+    versionLink = "https://raw.githubusercontent.com/superyor/helpers/master/version.txt";
     b64charset="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 };
 
