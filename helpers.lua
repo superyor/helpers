@@ -33,6 +33,26 @@ function helpers.b64decode(data)
     end))
 end
 
+function helpers.DecimalToHex(decimalNum)
+    local B,K,OUT,I,D=16,"0123456789ABCDEF","",0
+    while decimalNum>0 do
+        I=I+1
+        decimalNum,D=math.floor(decimalNum/B),math.mod(decimalNum,B)+1
+        OUT=string.sub(K,D,D)..OUT
+    end
+    return OUT
+end
+
+function helpers.StringToHex(string)
+    local output = "";
+
+    for letter in string.gmatch(string, "%a") do
+        output = output .. string.format('%02X',string.byte(letter))
+    end
+
+    return output;
+end
+
 local function updateCheck()
     if helpers.version ~= http.Get(helpers.versionLink) then
         local scriptName = GetScriptName()
