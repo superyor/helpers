@@ -60,7 +60,7 @@ local function updateCheck()
         newScript = http.Get(helpers.link)
         script:Write(newScript);
         script:Close()
-        updateCheck()
+        return false;
     else
         return true;
     end
@@ -68,4 +68,6 @@ end
 
 if updateCheck() then
     return helpers;
+else
+    return "Updated";
 end
