@@ -1,5 +1,5 @@
 local helpers = {
-    version = "1";
+    version = "2";
     link = "https://raw.githubusercontent.com/superyor/helpers/master/helpers.lua";
     versionLink = "https://raw.githubusercontent.com/superyor/helpers/master/version.txt";
     b64charset="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -51,6 +51,125 @@ function helpers.StringToHex(string)
     end
 
     return output;
+end
+
+function helpers.xor(a,b)
+
+    a = tonumber(a)
+    b = tonumber(b)
+
+    local p,c=1,0
+    while a>0 and b>0 do
+        local ra,rb=a%2,b%2
+        if ra~=rb then c=c+p end
+        a,b,p=(a-ra)/2,(b-rb)/2,p*2
+    end
+    if a<b then a=b end
+    while a>0 do
+        local ra=a%2
+        if ra>0 then c=c+p end
+        a,p=(a-ra)/2,p*2
+    end
+    return c
+end
+
+function helpers.toBits(num)
+    local t={}
+    while num>0 do
+        rest=math.fmod(num,2)
+        t[#t+1]=rest
+        num=(num-rest)/2
+    end
+
+	local bits = {}
+	local lpad = 8 - #t
+	if lpad > 0 then
+		for c = 1,lpad do table.insert(bits,0) end
+	end
+
+	for i = #t,1,-1 do table.insert(bits,t[i]) end
+
+    return table.concat(bits)
+end
+
+function helpers.toDec(bits)
+	local bmap = {128,64,32,16,8,4,2,1}
+
+	local bitt = {}
+	for c in bits:gmatch(".") do table.insert(bitt,c) end
+
+	local result = 0
+
+	for i = 1,#bitt do
+		if bitt[i] == "1" then result = result + bmap[i] end
+	end
+
+	return result
+end
+
+function helpers:crypt(str, key, inDecimalStringInput, inDecimalStringOutput)
+
+    if inDecimalStringInput then
+        local stringTable = {};
+
+        for n in str:gmatch("%S+") do
+            n = tonumber(n)
+            stringTable[#stringTable+1] = string.char(n);
+        end
+        str = table.concat(stringTable)
+    end
+
+    local keys = {}
+    for ch in key:gmatch(".") do
+
+        local keyBits = {};
+        local c = self.toBits(string.byte(ch))
+
+        for b in c:gmatch(".") do
+            keyBits[#keyBits+1] = b;
+        end
+
+        keys[#keys+1] = keyBits;
+    end
+
+	local block = {}
+	for ch in str:gmatch(".") do
+		local c = self.toBits(string.byte(ch))
+		table.insert(block,c)
+    end
+
+    local cK = 1;
+
+    if keys[1] == nil then
+        return "Empty Key"
+    end
+
+	for i = 1,#block do
+		local bitt = {}
+        local bit = block[i]
+
+        for c in bit:gmatch(".") do table.insert(bitt,c) end
+
+        local result = {}
+
+        for b in ipairs(bitt) do
+            table.insert(result, self.xor(keys[cK][b], bitt[b]))
+        end
+
+        if not inDecimalStringOutput then
+            block[i] = string.char(self.toDec(table.concat(result)))
+        else
+            block[i] = self.toDec(table.concat(result)) .. " "
+        end
+
+        if keys[cK+1] ~= nil then
+            cK = cK + 1;
+        else
+            cK = 1;
+        end
+	end
+
+	return table.concat(block)
 end
 
 local function updateCheck()
